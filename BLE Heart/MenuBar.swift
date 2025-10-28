@@ -14,20 +14,29 @@ struct HeartRateMenuBarApp: App {
                     .monospacedDigit()
 
                 Section {
-                    let devices = ble.devices
+                    let isConnected = ble.selectedPeripheral != nil
+                    let devices = isConnected ? (ble.selectedPeripheral.map { [$0] } ?? []) : ble.devices
                     if devices.isEmpty {
                         Text("未发现设备")
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(devices, id: \.identifier) { peripheral in
-                            Button(action: { ble.selectPeripheral(peripheral) }) {
+                            if isConnected && ble.selectedPeripheral?.identifier == peripheral.identifier {
+                                // Show connected device as non-interactive, grayed out
                                 HStack {
                                     Text(peripheral.name ?? "未知设备")
-                                    if ble.selectedPeripheral?.identifier == peripheral.identifier {
-                                        Spacer()
-                                        Text("已选择")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } else {
+                                Button(action: { ble.selectPeripheral(peripheral) }) {
+                                    HStack {
+                                        Text(peripheral.name ?? "未知设备")
+                                        if ble.selectedPeripheral?.identifier == peripheral.identifier {
+                                            Spacer()
+                                            Text("已选择")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
                                     }
                                 }
                             }
@@ -38,11 +47,20 @@ struct HeartRateMenuBarApp: App {
                 }
 
                 HStack {
-                    Button(ble.isScanning ? "停止扫描" : "开始扫描") {
-                        if ble.isScanning { ble.stopScan() } else { ble.startScan() }
-                    }
-                    if ble.selectedPeripheral != nil {
+                    if let _ = ble.selectedPeripheral {
+                        // When connected: hide start scan; show disconnect only
                         Button("断开连接") { ble.disconnect() }
+                    } else {
+                        // When not connected: allow scanning normally
+                        Button(ble.isScanning ? "停止扫描" : "开始扫描") {
+                            if ble.isScanning {
+                                ble.stopScan()
+                            } else {
+                                // Ensure no connection before scanning (safety)
+                                ble.disconnect()
+                                ble.startScan()
+                            }
+                        }
                     }
                 }
 
