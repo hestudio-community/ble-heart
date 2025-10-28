@@ -10,22 +10,9 @@
 		9B29190C2EB04B93009FB673 /* BLE Heart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BLE Heart.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9B2919222EB0537D009FB673 /* Exceptions for "BLE Heart" folder in "BLE Heart" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"BLE-Heart-Info.plist",
-			);
-			target = 9B29190B2EB04B93009FB673 /* BLE Heart */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9B29190E2EB04B93009FB673 /* BLE Heart */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9B2919222EB0537D009FB673 /* Exceptions for "BLE Heart" folder in "BLE Heart" target */,
-			);
 			path = "BLE Heart";
 			sourceTree = "<group>";
 		};
