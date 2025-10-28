@@ -8,11 +8,6 @@ struct HeartRateMenuBarApp: App {
     var body: some Scene {
         MenuBarExtra(content: {
             VStack(alignment: .leading, spacing: 8) {
-                Text("心率: \(ble.heartRate ?? 0) BPM")
-                    .lineLimit(1)
-                    .allowsTightening(true)
-                    .monospacedDigit()
-
                 Section {
                     let isConnected = ble.selectedPeripheral != nil
                     let devices = isConnected ? (ble.selectedPeripheral.map { [$0] } ?? []) : ble.devices
@@ -81,4 +76,3 @@ struct HeartRateMenuBarApp: App {
         })
     }
 }
-
