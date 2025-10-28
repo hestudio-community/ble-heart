@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9B8F198B2EB0F72400E4CB98 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 9B8F198A2EB0F71C00E4CB98 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		9B29190C2EB04B93009FB673 /* BLE Heart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BLE Heart.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B8F198A2EB0F71C00E4CB98 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		9B2919032EB04B93009FB673 = {
 			isa = PBXGroup;
 			children = (
+				9B8F198A2EB0F71C00E4CB98 /* README.md */,
 				9B29190E2EB04B93009FB673 /* BLE Heart */,
 				9B29190D2EB04B93009FB673 /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B8F198B2EB0F72400E4CB98 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,7 +288,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hestudio.bleheart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -330,7 +337,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hestudio.bleheart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
