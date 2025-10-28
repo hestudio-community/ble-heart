@@ -33,24 +33,35 @@ final class BLEHeartRateManager: NSObject, ObservableObject, CBCentralManagerDel
         central = CBCentralManager(delegate: self, queue: .main)
     }
 
+    // MARK: - Scan Control Helpers
+    private func restartScan(after delay: TimeInterval = 0.6) {
+        // Stop current scan and clear caches, then restart after a small delay to avoid CoreBluetooth races
+        stopScan()
+        peripheralsByID.removeAll()
+        devices.removeAll()
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.startScan()
+        }
+    }
+
     // MARK: - Public API
     func startScan() {
-        // Ensure Bluetooth is available and authorized
         if #available(macOS 12.0, *) {
             let auth = CBCentralManager.authorization
             guard auth == .allowedAlways || auth == .notDetermined else { return }
         }
         guard central.state == .poweredOn else { return }
+
         if !isScanning {
             isScanning = true
             peripheralsByID.removeAll()
             devices.removeAll()
-            // Some heart rate monitors may not advertise the standard service in all states.
-            // If you still can't find devices, consider scanning with nil services.
-            central.scanForPeripherals(withServices: [heartRateService], options: [
-                CBCentralManagerScanOptionAllowDuplicatesKey: false
-            ])
         }
+
+        central.stopScan()
+        central.scanForPeripherals(withServices: [heartRateService], options: [
+            CBCentralManagerScanOptionAllowDuplicatesKey: false
+        ])
     }
 
     func stopScan() {
@@ -76,23 +87,31 @@ final class BLEHeartRateManager: NSObject, ObservableObject, CBCentralManagerDel
 
     func disconnect() {
         if let current = selectedPeripheral {
-            central.cancelPeripheralConnection(current)
-            selectedPeripheral = nil
+            // Clear state and cancel connection; rely on delegate callback to resume scanning
+            current.delegate = nil
             heartRate = nil
+            central.cancelPeripheralConnection(current)
+        } else {
+            // No active connection; restart scanning with a tiny delay to avoid races
+            heartRate = nil
+            restartScan(after: 0.1)
         }
-        startScan()
     }
 
-    /// Broader scan without service filters. Use temporarily for troubleshooting.
-    func startBroadScanTemporarily(seconds: TimeInterval = 8) {
-        guard central.state == .poweredOn else { return }
-        guard !isScanning else { return }
-        isScanning = true
+    /// Hard reset the CoreBluetooth central session (use sparingly)
+    func hardResetBluetoothSession() {
+        stopScan()
+        if let current = selectedPeripheral {
+            central.cancelPeripheralConnection(current)
+        }
+        selectedPeripheral = nil
+        heartRate = nil
         peripheralsByID.removeAll()
         devices.removeAll()
-        central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
-        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
-            self?.stopScan()
+        // Recreate central after a small delay to ensure teardown
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self else { return }
+            self.central = CBCentralManager(delegate: self, queue: .main)
         }
     }
 
@@ -100,10 +119,8 @@ final class BLEHeartRateManager: NSObject, ObservableObject, CBCentralManagerDel
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            // Auto resume scanning if user expects it
-            if isScanning == false {
-                startScan()
-            }
+            // Auto resume scanning if user expects it or after reset
+            startScan()
         default:
             stopScan()
             devices.removeAll()
@@ -131,15 +148,21 @@ final class BLEHeartRateManager: NSObject, ObservableObject, CBCentralManagerDel
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        // Connection established; ensure scanning is stopped to keep state consistent
+        stopScan()
         peripheral.discoverServices([heartRateService])
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if selectedPeripheral == peripheral { selectedPeripheral = nil }
+        heartRate = nil
+        hardResetBluetoothSession()
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         if selectedPeripheral == peripheral { selectedPeripheral = nil }
+        heartRate = nil
+        hardResetBluetoothSession()
     }
 
     // MARK: - CBPeripheralDelegate

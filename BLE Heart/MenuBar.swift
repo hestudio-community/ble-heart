@@ -56,8 +56,6 @@ struct HeartRateMenuBarApp: App {
                             if ble.isScanning {
                                 ble.stopScan()
                             } else {
-                                // Ensure no connection before scanning (safety)
-                                ble.disconnect()
                                 ble.startScan()
                             }
                         }
@@ -83,3 +81,4 @@ struct HeartRateMenuBarApp: App {
         })
     }
 }
+
